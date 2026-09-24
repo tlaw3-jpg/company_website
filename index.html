@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A fictional company website for a deployment approval demo.">
+  <title>Example Company</title>
+  <style>
+    :root { font: 16px/1.6 system-ui, sans-serif; color: #172b4d; background: #f7f8fa; }
+    body { margin: 0; }
+    header, main, footer { max-width: 900px; margin: auto; padding: 24px; }
+    header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    nav { display: flex; gap: 20px; flex-wrap: wrap; }
+    a { color: #0052cc; text-underline-offset: 4px; }
+    a:focus-visible { outline: 3px solid #0052cc; outline-offset: 4px; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.15; margin: 24px 0; }
+    h2 { margin-top: 0; }
+    .hero { padding: 40px 0; }
+    #announcement { background: #deebff; border-left: 4px solid #0052cc; padding: 16px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; }
+    .card { background: white; border: 1px solid #dfe1e6; border-radius: 8px; padding: 24px; }
+    footer { color: #505f79; font-size: .875rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Example Company</strong>
+    <nav aria-label="Main navigation">
+      <a href="#about">About</a>
+      <a href="#approach">Our approach</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="headline">
+      <h1 id="headline">Working together.<br>Moving forward.</h1>
+      <p>We bring people, expertise, and ideas together to support our customers.</p>
+      <!-- LIVE DEMO EDIT: change the announcement below, then commit in Bitbucket. -->
+      <p id="announcement">Welcome to our company website.</p>
+    </section>
+    <div class="cards">
+      <section class="card" id="about">
+        <h2>About us</h2>
+        <p>We focus on dependable delivery and long-term relationships.</p>
+      </section>
+      <section class="card" id="approach">
+        <h2>Our approach</h2>
+        <p>We listen, understand your priorities, and work with you to deliver practical results.</p>
+      </section>
+      <section class="card" id="contact">
+        <h2>Contact</h2>
+        <p>This is a demo website. No enquiries or personal information are collected.</p>
+      </section>
+    </div>
+  </main>
+  <footer>Example Company is fictional. DevOps demonstration only.</footer>
+</body>
+</html>
