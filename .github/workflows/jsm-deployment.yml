@@ -1,0 +1,124 @@
+name: Company website - JSM deployment demo
+
+# Manual start only while the Jira protection rule is being configured.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: company-website-jsm-demo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build - Package website
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check service mapping and package HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s .jira/config.yml
+          if grep -q 'REPLACE_WITH_JSM_SERVICE_ID' .jira/config.yml; then
+            echo '::error::Replace the Service ID in .jira/config.yml using the JSM GitHub connection wizard.'
+            exit 1
+          fi
+          mkdir -p dist
+          cp index.html dist/index.html
+          (cd dist && sha256sum index.html > site.sha256)
+      - name: Store release artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: company-website
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  test:
+    name: Test - HTML and artifact integrity
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download the built website
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: company-website
+          path: dist
+      - name: Check the artifact and basic HTML structure
+        working-directory: dist
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum -c site.sha256
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Page(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.tags = set()
+              def handle_starttag(self, tag, attrs):
+                  self.tags.add(tag)
+          source = Path('index.html').read_text(encoding='utf-8')
+          page = Page()
+          page.feed(source)
+          assert '<!doctype html>' in source.lower(), 'Missing HTML doctype'
+          assert {'html', 'head', 'title', 'body'} <= page.tags, 'Missing page structure'
+          print('Basic HTML structure checks passed; this is not full HTML validation.')
+          PY
+
+  staging:
+    name: Staging - Ephemeral HTTP smoke test
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: Staging
+    steps:
+      - name: Download the same artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: company-website
+          path: dist
+      - name: Start a temporary server and verify the response
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd dist && sha256sum -c site.sha256)
+          python3 -m http.server 8080 --bind 127.0.0.1 --directory dist > server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 \
+            http://127.0.0.1:8080/ -o response.html
+          cmp dist/index.html response.html
+          echo 'HTTP smoke test passed; this is not a persistent staging website.'
+
+  production:
+    name: Production - Simulated release
+    needs: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # REQUIRED OUTSIDE YAML: enable Jira's custom protection rule on Production.
+    # Without that rule, this job can proceed without JSM approval.
+    environment:
+      name: Production
+    steps:
+      - name: Download the tested artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: company-website
+          path: dist
+      - name: Verify the release artifact
+        working-directory: dist
+        run: sha256sum -c site.sha256
+      - name: Simulate release
+        run: echo 'SIMULATED release of the tested website artifact. No website has been published.'

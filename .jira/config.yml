@@ -1,0 +1,13 @@
+# Get this Service ID from JSM > Change management > Connect pipeline > GitHub.
+# Use the exact value, not a project key, service name, or Assets object key.
+# Do not put API tokens here. This file is ordinary repository configuration.
+deployments:
+  deploymentGating:
+    enabled: true
+    retry: 50
+    sleep: 30
+    environments:
+      - Production
+  services:
+    ids:
+      - "b:YXJpOmNsb3VkOmdyYXBoOjpzZXJ2aWNlLzhiNjEzNjFiLTI2NGEtNDk3Mi1iZTU3LTllNWY2NTUyZWM2OS82YWIyNDc4OC0yODk5LTQ2YjMtOTJlMS04MDExYjRlN2U4MTA="
