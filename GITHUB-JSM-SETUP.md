@@ -1,4 +1,4 @@
-# Company website: GitHub Actions + JSM
+# Company website: GitHub Actions + JSM - demo
 
 ## Before starting
 
