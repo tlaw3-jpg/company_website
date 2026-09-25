@@ -1,7 +1,10 @@
 name: Company website - JSM deployment demo
 
-# Manual start only while the Jira protection rule is being configured.
+# Runs automatically on every push to main, and can also be started manually.
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
